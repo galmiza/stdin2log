@@ -52,12 +52,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // Debug
-  cerr << "MAX_FILES = " << MAX_FILES << endl;
-  cerr << "MAX_SIZE = " << MAX_SIZE << endl;
-  cerr << "LOG_BASEPATH = " << LOG_BASEPATH << endl;
-  cerr << "Z_LEVEL = " << Z_LEVEL << endl;
-
   // Precompute constants from options
   sprintf(LOG_FILENAME,"%s.log",LOG_BASEPATH);
   strcat(LOG_EXT,Z_LEVEL==-1?"log":"gz");
@@ -85,8 +79,8 @@ int main(int argc, char *argv[]) {
         LOG_FILENAME,LOG_BASEPATH,li,LOG_FILENAME);
       system(str);
       if (Z_LEVEL!=-1) {
-        sprintf(str,"(cat %s.%i.log | bzip2 -%i > %s.%i.gz && rm %s.%i.log) &", // compress latest archive (async)
-          LOG_BASEPATH,li,Z_LEVEL,LOG_BASEPATH,li,LOG_BASEPATH,li);
+        sprintf(str,"(gzip -%i -c %s.%i.log > %s.%i.gz && rm %s.%i.log) &", // compress latest archive (async)
+          Z_LEVEL,LOG_BASEPATH,li,LOG_BASEPATH,li,LOG_BASEPATH,li);
         system(str);
       }
       sprintf(str,"rm %s.%i.%s 2>/dev/null",LOG_BASEPATH,li-MAX_FILES,LOG_EXT); // lazy remove oldest file

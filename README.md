@@ -1,14 +1,14 @@
 # Welcome
 
 Stdin2log is a **developer tool** that helps manage the **logs of command line applications**.  
-Basically it converts in realtime the text stream on its standard input (stdin) into a log structure with support for **log rotation** and **log compression**.
+Basically it converts the text stream on the standard input (stdin) into a log file structure with support for **log rotation** and **log compression**.
 
 # Usage
 
 Pipe the stdout/stderr stream of your command line application into stdin2log (more about options later).
 
 ```
-$ myVerboseApp | ./stdin2log -o /tmp/myLog -s $((1024*1024*16)) -n 4 -z 9
+$ myVerboseApp | ./stdin2log -o /tmp/myLog -s 16777216 -n 4 -z 9
 ```
 
 After some time, your logs may look like this:
@@ -27,7 +27,7 @@ $ ls -l /tmp/myLog*
 ### (o)utput
 
 Basename of the logs.  
-Logs file will be named <basename>.<index>.gz if compression is activated, <basename>.<index>.log if compression is disabled.
+Logs file will be named \<basename\>.\<index\>.gz if compression is activated, \<basename\>.\<index\>.log if compression is disabled.
 
 ### (s)ize
 
@@ -36,7 +36,7 @@ Maximum size of an uncompressed log file in bytes.
 ### (n)umber
 
 Maximum number of log files.  
-The latest log files are dropped as new log files are created.
+The oldest log files are dropped as new log files are created.
 
 ### compre(z)ion
 
@@ -46,7 +46,7 @@ From 1 (fastest) to 9 (best).
 # Compilation
 
 Stdin2log is written in c++.  
-It doesn't really on any framework or platform but you need to compile it for the target architecture.
+It doesn't rely on any framework or platform but you need to compile it for the target architecture.
 
 ### Install g++ compiler
 
