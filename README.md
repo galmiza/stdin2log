@@ -16,10 +16,10 @@ After some time, your logs may look like this:
 ```
 $ ls -l /tmp/myLog*
 -rw-r--r--  1 guillaume  staff  12484818 Nov 10 15:34 myLog.log   # current log being populated by stdin2log (always under 16MB)
--rw-r--r--  1 guillaume  staff    369180 Nov 10 14:08 myLog.24.gz # \
--rw-r--r--  1 guillaume  staff    277013 Nov 10 14:01 myLog.25.gz # |_ the 4 latest compressed logs (each with a maximum uncompressed size of 16MB)
--rw-r--r--  1 guillaume  staff    457202 Nov 10 13:55 myLog.26.gz # |
--rw-r--r--  1 guillaume  staff    398216 Nov 10 12:10 myLog.27.gz # /
+-rw-r--r--  1 guillaume  staff    369180 Nov 10 14:08 myLog.24.log.gz # \
+-rw-r--r--  1 guillaume  staff    277013 Nov 10 14:01 myLog.25.log.gz # |_ the 4 latest compressed logs (each with a maximum uncompressed size of 16MB)
+-rw-r--r--  1 guillaume  staff    457202 Nov 10 13:55 myLog.26.log.gz # |
+-rw-r--r--  1 guillaume  staff    398216 Nov 10 12:10 myLog.27.log.gz # /
 ```
 
 # Options
@@ -27,7 +27,7 @@ $ ls -l /tmp/myLog*
 ### (o)utput
 
 Basename of the logs.  
-Logs file will be named \<basename\>.\<index\>.gz if compression is activated, \<basename\>.\<index\>.log if compression is disabled.
+Logs file will be named \<basename\>.\<index\>.log.gz if compression is activated, \<basename\>.\<index\>.log if compression is disabled.
 
 ### (s)ize
 
@@ -67,7 +67,7 @@ $ yum install -y gcc-c++
 ### Compile
 
 ```
-$ g++ main.cpp -o stdin2log
+$ g++ -std=c++17 main.cpp -o stdin2log
 ```
 
 Yeah that's it. C++ isn't that horrible after all, right?
@@ -87,17 +87,17 @@ Feed some random strings into stdin2log.
 $ dd if=/dev/urandom bs=1024 count=256 | hexdump | ./stdin2log -o test1 -n 6 -s $((1024*32)) -z 9 # set compression, limit to 6 files
 $ dd if=/dev/urandom bs=1024 count=256 | hexdump | ./stdin2log -o test2 -n 2 -s $((1024*32)) # disable compression, limit to 2 files
 $ ls -l test* # show the logs
--rw-r--r--  1 guillaume  staff  11577 Nov 10 16:24 test1.23.gz  # \
--rw-r--r--  1 guillaume  staff  11566 Nov 10 16:24 test1.24.gz  # |
--rw-r--r--  1 guillaume  staff  11533 Nov 10 16:24 test1.25.gz  # |
--rw-r--r--  1 guillaume  staff  11545 Nov 10 16:24 test1.26.gz  # |_ first test, 6 compressed log files 
--rw-r--r--  1 guillaume  staff  11508 Nov 10 16:24 test1.27.gz  # |
--rw-r--r--  1 guillaume  staff  11570 Nov 10 16:24 test1.28.gz  # |
+-rw-r--r--  1 guillaume  staff  11577 Nov 10 16:24 test1.23.log.gz  # \
+-rw-r--r--  1 guillaume  staff  11566 Nov 10 16:24 test1.24.log.gz  # |
+-rw-r--r--  1 guillaume  staff  11533 Nov 10 16:24 test1.25.log.gz  # |
+-rw-r--r--  1 guillaume  staff  11545 Nov 10 16:24 test1.26.log.gz  # |_ first test, 6 compressed log files
+-rw-r--r--  1 guillaume  staff  11508 Nov 10 16:24 test1.27.log.gz  # |
+-rw-r--r--  1 guillaume  staff  11570 Nov 10 16:24 test1.28.log.gz  # |
 -rw-r--r--  1 guillaume  staff    232 Nov 10 16:24 test1.log    # /
 -rw-r--r--  1 guillaume  staff  32760 Nov 10 16:24 test2.27.log # \
 -rw-r--r--  1 guillaume  staff  32760 Nov 10 16:24 test2.28.log # |_ second test, 2 uncompressed log files
 -rw-r--r--  1 guillaume  staff    232 Nov 10 16:24 test2.log    # /
-$ rm test1.*.gz test2.*.log test*.log # clean the mess
+$ rm test1.*.log.gz test2.*.log test*.log # clean the mess
 ```
 
 # Roadmap

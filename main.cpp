@@ -12,8 +12,10 @@
 #include <string>
 #include <fstream>
 #include <iostream> /* cout, cerr */
-#include <cstring>  /* strcat */
+#include <cstring> /* strcat */
 #include <unistd.h> /* getopt */
+#include <filesystem> /* directory_iterator */
+#include <regex> /* regex_search */
 using namespace std;
 
 // Entry point
@@ -25,7 +27,7 @@ int main(int argc, char *argv[]) {
   int Z_LEVEL = -1;
   char LOG_BASEPATH[128] = {0};
   char LOG_FILENAME[128] = {0};
-  char LOG_EXT[4] = {0};
+  char LOG_EXT[8] = {0};
 
   // Process command line arguments and update options
   int opt;
@@ -54,37 +56,39 @@ int main(int argc, char *argv[]) {
 
   // Precompute constants from options
   sprintf(LOG_FILENAME,"%s.log",LOG_BASEPATH);
-  strcat(LOG_EXT,Z_LEVEL==-1?"log":"gz");
+  strcat(LOG_EXT,Z_LEVEL==-1?"log":"log.gz");
 
-  // Find current log index based on existing files
-  char str[128] = {0};
-  bool done = false;
-  int li = 1000;
-  while (!done && li!=0) {
-    sprintf(str,"%s.%i.%s",LOG_BASEPATH,--li,LOG_EXT);
-    ifstream f(str);
-    if (f.good()) done = true;
+  // Find current log index from existing files
+  regex r(string(LOG_BASEPATH)+"\\.([0-9]*)\\."+LOG_EXT); // pattern to find a typical log file
+  smatch m;
+  int li = 0; // log index
+  for (const auto &entry: filesystem::directory_iterator(".")) { // read all filenames in local directory
+    try {
+      string filename = entry.path().string(); // get filename as a string
+      regex_search(filename, m, r); // search data from pattern
+      int i = stoi(m.str(1)); // extract index from pattern
+      if (i>li) li = i; // keep the highest index
+    } catch (exception &e) {} // ignore invalid filenames
   }
 
   // Continuously read stdin and stream to rotating files
   fstream is;
   is.open(LOG_FILENAME,ios::app);
+  char str[128] = {0};
   for (string line; getline(cin,line);) {
 
     // If file would be too big already, rename it
     int size = is.tellg();
     if (size+line.size()+1>MAX_SIZE) {
       li++;
-      sprintf(str,"cp %s %s.%i.log && truncate -s 0 %s", // never rename the active log file not to break its stream
-        LOG_FILENAME,LOG_BASEPATH,li,LOG_FILENAME);
-      system(str);
+      sprintf(str,"cp %s %s.%i.log && truncate -s 0 %s", LOG_FILENAME,LOG_BASEPATH,li,LOG_FILENAME);
+      system(str); // never rename the active log file not to break its stream
       if (Z_LEVEL!=-1) {
-        sprintf(str,"(gzip -%i -c %s.%i.log > %s.%i.gz && rm %s.%i.log) &", // compress latest archive (async)
-          Z_LEVEL,LOG_BASEPATH,li,LOG_BASEPATH,li,LOG_BASEPATH,li);
-        system(str);
+        sprintf(str,"gzip -%i %s.%i.log &", Z_LEVEL,LOG_BASEPATH,li);
+        system(str); // compress latest archive (async)
       }
-      sprintf(str,"rm %s.%i.%s 2>/dev/null",LOG_BASEPATH,li-MAX_FILES,LOG_EXT); // lazy remove oldest file
-      system(str);
+      sprintf(str,"rm %s.%i.%s 2>/dev/null",LOG_BASEPATH,li-MAX_FILES,LOG_EXT);
+      system(str); // lazy remove oldest file
     }
 
     // Write line into current logfile
